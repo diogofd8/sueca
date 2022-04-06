@@ -2,9 +2,15 @@
 
 GameSettings::GameSettings ()
 {
-    ID = -1;
+
+}
+
+GameSettings::GameSettings (int _gameID, int _trumpSuit, std::array<Player,4> *_gamer)
+{
+    ID = _gameID;
     playedTurns = 0;
-    trumpSuit = -1;
+    trumpSuit = _trumpSuit;
+    gamer = _gamer;
 }
 
 GameSettings::GameSettings (int _gameID, int _trumpSuit)
@@ -36,12 +42,12 @@ const int GameSettings::getTrumpSuit () const
 
 const Player& GameSettings::getPlayer (int _index) const
 {
-    return gamer[_index];
+    return (*gamer)[_index];
 }
 
-const std::array<Player, 4>& GameSettings::getPlayers () const
+const std::array<Player,4>& GameSettings::getPlayers () const
 {
-    return gamer;
+    return *gamer;
 }
 
 void GameSettings::setTrumpSuit (int _suit)
@@ -52,19 +58,19 @@ void GameSettings::setTrumpSuit (int _suit)
 
 void GameSettings::setPlayer (Player &_player, int &_index)
 {
-    gamer[_index] = _player;
+    (*gamer)[_index] = _player;
     return;
 }
 
 void GameSettings::setPlayerPoints (int _index, int _points)
 {
-    gamer[_index].setPoints(_points);
+    (*gamer)[_index].setPoints(_points);
     return;
 }
 
 Player& GameSettings::PlayerSettings (int _index)
 {
-    return gamer[_index];
+    return (*gamer)[_index];
 }
 
 /****************************************************************/

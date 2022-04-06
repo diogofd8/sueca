@@ -14,13 +14,14 @@
 class GameSettings : public Deck {
     public:
         GameSettings();
+        GameSettings(int, int, std::array<Player,4>*);
         GameSettings(int, int);
         ~GameSettings();
         const int getID() const;
         const int getPlayedTurns() const;
         const int getTrumpSuit() const;
         const Player& getPlayer(int) const;
-        const std::array<Player, 4>& getPlayers() const;
+        const std::array<Player,4>& getPlayers() const;
         void setTrumpSuit(int);
         void setPlayer(Player&, int&);
         void setPlayerPoints(int,int);
@@ -30,7 +31,7 @@ class GameSettings : public Deck {
         int ID;
         int playedTurns;
         int trumpSuit;
-        std::array<Player,4> gamer;
+        std::array<Player,4>* gamer;
 };
 
 class GameTurn : public GameSettings {
