@@ -1,8 +1,13 @@
 #include "Game.h"
 
+// GameSettings
+
 GameSettings::GameSettings ()
 {
-
+    ID = 0;
+    playedTurns = 0;
+    trumpSuit = 0;
+    winnerTeam = 0;
 }
 
 GameSettings::GameSettings (int _gameID, int _trumpSuit, std::array<Player,4> *_gamer)
@@ -11,13 +16,7 @@ GameSettings::GameSettings (int _gameID, int _trumpSuit, std::array<Player,4> *_
     playedTurns = 0;
     trumpSuit = _trumpSuit;
     gamer = _gamer;
-}
-
-GameSettings::GameSettings (int _gameID, int _trumpSuit)
-{
-    ID = _gameID;
-    playedTurns = 0;
-    trumpSuit = _trumpSuit;
+    winnerTeam = 0;
 }
 
 GameSettings::~GameSettings ()
@@ -40,14 +39,24 @@ const int GameSettings::getTrumpSuit () const
     return trumpSuit;
 }
 
+const std::array<Player,4>& GameSettings::getPlayers () const
+{
+    return *gamer;
+}
+
 const Player& GameSettings::getPlayer (int _index) const
 {
     return (*gamer)[_index];
 }
 
-const std::array<Player,4>& GameSettings::getPlayers () const
+Player& GameSettings::getPlayer (int _index)
 {
-    return *gamer;
+    return (*gamer)[_index];
+}
+
+const int GameSettings::getWinnerTeam() const
+{
+    return winnerTeam;
 }
 
 void GameSettings::setTrumpSuit (int _suit)
@@ -56,9 +65,9 @@ void GameSettings::setTrumpSuit (int _suit)
     return;
 }
 
-void GameSettings::setPlayer (Player &_player, int &_index)
+void GameSettings::setPlayers (std::array<Player,4> *_gamer)
 {
-    (*gamer)[_index] = _player;
+    gamer = _gamer;
     return;
 }
 
@@ -68,21 +77,71 @@ void GameSettings::setPlayerPoints (int _index, int _points)
     return;
 }
 
-Player& GameSettings::PlayerSettings (int _index)
+void GameSettings::printTrumpSuit () const
 {
-    return (*gamer)[_index];
+    std::string _suit;
+
+    switch (trumpSuit) 
+    {
+        case 0: 
+            _suit = "HEARTS";
+            break;
+        case 1:
+            _suit = "DIAMONDS";
+            break;
+        case 2:
+            _suit = "CLUBS";
+            break;
+        case 3:
+            _suit = "SPADES";
+            break;
+    }
+
+    std::cout << _suit;
+
+    return;
 }
 
-/****************************************************************/
+int GameSettings::calcWinnerTeam ()
+{   
+    int pointsA = 0, pointsB = 0;
+
+    for (auto i = 0; i < 4; ++i)
+    {
+        if (i%2 == 0)
+            pointsA += getPlayer(i).getPoints();
+        else pointsB += getPlayer(i).getPoints();
+    }
+
+    if (pointsA == pointsB)
+    {
+        winnerTeam = 0;
+        return pointsA;
+    }
+    else if (pointsA > pointsB)
+    {
+        winnerTeam = 1;
+        return pointsA;
+    } 
+    else winnerTeam = 2;
+    return pointsB;
+
+}
+
+// GameTurn
 
 GameTurn::GameTurn ()
 {
-    NO = -1;
+    NO = 0;
     startingPlayer = 0;
+    playedSuit = 0;
+    turnWinner = 0;
+    points = 0;
     points = 0;
 }
 
-GameTurn::GameTurn (int _NO, int _startingPlayer)
+GameTurn::GameTurn (int _NO, int _startingPlayer, int _ID, int _trumpSuit, std::array<Player,4> *_gamer)
+: GameSettings(_ID, _trumpSuit, _gamer)
 {
     NO = _NO;
     startingPlayer = _startingPlayer;
@@ -126,21 +185,42 @@ void GameTurn::setPlayedSuit (int _playedSuit)
 }
 
 void GameTurn::setPoints (int _points)
-{
+{   
     points += _points;
     return;
 }
 
 void GameTurn::setPlayedCard (Card &_card)
 {
-    tableCard.push_back(_card);
+    tableCard.emplace_back(_card);
     return;
 }
+
+void GameTurn::printTable ()
+{
+    if (tableCard.size() == 0)
+    {
+        std::cout << "Table:" << std::endl;
+        return;
+    }
+
+    std::cout << "Table: | ";
+
+    for (auto i = 0; i < tableCard.size(); ++i)
+    {
+        std::cout << "(" << tableOrder[i] << ") " << getPlayer(tableOrder[i]).getName() << " - ";
+        tableCard[i].printCard();
+        std::cout << " | ";
+    }
+
+    std::cout << std::endl;
+    return;
+} 
 
 void GameTurn::calcTurnWinner ()
 {
     Card max, maxtrunfo;
-    int winner, winnertrunfo, points = 0;
+    int winner, winnertrunfo;
     bool trunfo = false;
 
     if (tableCard.size() < 4)
@@ -149,10 +229,13 @@ void GameTurn::calcTurnWinner ()
         return;
     }
 
+    std::cout << std::endl;
+    printTable();
+
     // Determining most valuable card
     for (auto i = 0; i < 4; ++i)
     {
-        if (tableCard[i].getRank() > max.getRank())
+        if ((tableCard[i].getSuit() == playedSuit) && (tableCard[i].getRank() > max.getRank()))
         {
             max = tableCard[i];
             winner = i;
@@ -168,44 +251,22 @@ void GameTurn::calcTurnWinner ()
         // Adding points in the table
         setPoints(tableCard[i].getPoints());
     }
-    
-    // Adding table points to the winner player
+
     if (trunfo)
-    {
-        std::cout << "\t(" << winnertrunfo << ") " << getPlayer(winnertrunfo).getName() << " wins!" << std::endl;
-        setPlayerPoints(winnertrunfo, points);
-        turnWinner = winnertrunfo;
-    }
-    else
-    {
-        std::cout << "\t(" << winner << ") " << getPlayer(winner).getName() << " wins!" << std::endl;
-        setPlayerPoints(winner, points);
-        turnWinner = winner;
-    }
+        turnWinner = tableOrder[winnertrunfo];
+    else turnWinner = tableOrder[winner];
+
+    std::cout << "\t(" << turnWinner+1 << ") " << getPlayer(turnWinner).getName() << " wins!" << std::endl;
+    setPlayerPoints(turnWinner, points);
 
     return;
 }
-
-void GameTurn::printTable ()
-{
-    std::cout << "Table: | ";
-
-    for (auto i = 0; i < tableCard.size(); ++i)
-    {
-        std::cout << "(" << i << ") " << getPlayer(i).getName() << " - ";
-        tableCard[i].printCard();
-        std::cout << " | ";
-    }
-
-    std::cout << std::endl;
-    return;
-} 
 
 void GameTurn::playTurn ()
 {   
     for (auto p = startingPlayer; p < getPlayers().size(); ++p)
     {
-        std::cout << "(" << p << ") " << getPlayer(p).getName() << "'s turn!" << std::endl;
+        std::cout << "\t(" << p+1 << ") " << getPlayer(p).getName() << "'s turn!" << std::endl;
 
         if (getPlayer(p).printHand() == -1)
         {   
@@ -216,14 +277,15 @@ void GameTurn::playTurn ()
         std::cout << std::endl;
         printTable();
         if (p != startingPlayer)
-            std::cout << "\t -> Table Suit: " << tableCard[0].getRankStr() << std::endl;
-            
-        std::cout << "\nPick the number of the card you want to play: ";
+            std::cout << "\t -> Table Suit: " << tableCard[0].getRankStr();
+        std::cout << "\t\t -> Table Trump: ";
+        printTrumpSuit();    
+        std::cout << "\n\nPick the number of the card you want to play: ";
 
         int playcard;
         std::cin >> playcard;
 
-        while ((playcard > 9) || (playcard < 0))
+        while ((playcard > getPlayer(p).getHandSize()) || (playcard < 0))
         {
             std::cout << "Invalid selection!\nPick the number of the card you want to play: ";
             std::cin >> playcard;
@@ -245,13 +307,14 @@ void GameTurn::playTurn ()
             std::cin >> playcard;
         }
 
-        setPlayedCard(PlayerSettings(p).getPlayerCard(playcard));
-        PlayerSettings(p).playCard(playcard);        
+        tableOrder.emplace_back(p);
+        setPlayedCard(getPlayer(p).getPlayerCard(playcard));
+        getPlayer(p).playCard(playcard);        
     }
 
     for (auto p = 0; p < startingPlayer; ++p)
     {
-        std::cout << "\t(" << p << ") " << getPlayer(p).getName() << "'s turn!" << std::endl;
+        std::cout << "\t(" << p+1 << ") " << getPlayer(p).getName() << "'s turn!" << std::endl;
 
         if (getPlayer(p).printHand() == -1)
         {   
@@ -261,13 +324,15 @@ void GameTurn::playTurn ()
 
         std::cout << std::endl;
         printTable();
-        std::cout << "\t -> Table Suit: " << tableCard[0].getRankStr() << std::endl;    
-        std::cout << "Pick the number of the card you want to play: ";
+        std::cout << "\t -> Table Suit: " << tableCard[0].getRankStr();
+        std::cout << "\t\t -> Table Trump: ";
+        printTrumpSuit();    
+        std::cout << "\n\nPick the number of the card you want to play: ";
 
         int playcard;
         std::cin >> playcard;
 
-        while ((playcard > 9) || (playcard < 0))
+        while ((playcard > getPlayer(p).getHandSize()) || (playcard < 0))
         {
             std::cout << "Invalid selection!\nPick the number of the card you want to play: ";
             std::cin >> playcard;
@@ -289,8 +354,9 @@ void GameTurn::playTurn ()
             std::cin >> playcard;
         }
 
-        setPlayedCard(PlayerSettings(p).getPlayerCard(playcard));
-        PlayerSettings(p).playCard(playcard);     
+        tableOrder.emplace_back(p);
+        setPlayedCard(getPlayer(p).getPlayerCard(playcard));
+        getPlayer(p).playCard(playcard);     
     }       
 
     return;

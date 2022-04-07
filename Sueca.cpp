@@ -17,7 +17,7 @@ int main ()
     std::string input;
 
     Deck gamedeck;
-    std::array<Player,4> gamer;
+    std::array<Player,4> _player;
 
     std::cout << "\t\t\t.:: Jogo da Sueca ::." << std::endl;
     std::cout << "\n=====================================================================\n" << std::endl;
@@ -55,14 +55,14 @@ int main ()
                     std::cin >> playername;
                 }
 
-                gamer[i].setID(i);
-                gamer[i].setName(playername);
+                _player[i].setID(i);
+                _player[i].setName(playername);
             }
         }
 
         for (auto i = 0; i < 4; ++i)
             for (auto c = 0; c < 10; c++)
-                gamer[i].setPlayerCard(gamedeck.getDeckCard(c+i*10), c);
+                _player[i].setPlayerCard(gamedeck.getDeckCard(c+i*10), c);
 
         
         // Set the trump card
@@ -71,41 +71,43 @@ int main ()
         std::uniform_int_distribution<int> randomplayer(0,3);
         int trumpOwner = randomplayer(generator);
 
-        std::cout << "\nThe trump card is (" << trumpOwner << ") " << gamer[trumpOwner].getName() << "'s ";
-        gamer[trumpOwner].getPlayerCard(0).printCard();
+        std::cout << "\nThe trump card is (" << trumpOwner+1 << ") " << _player[trumpOwner].getName() << "'s ";
+        _player[trumpOwner].getPlayerCard(0).printCard();
         std::cout << std::endl;
-        int trumpSuit = gamer[trumpOwner].getPlayerCard(0).getSuit();
+        int trumpSuit = _player[trumpOwner].getPlayerCard(0).getSuit();
 
         // Create Game instance
-        GameSettings suecaGame(gameID, trumpSuit);
-        
-        for (auto i = 0; i < 4; ++i)
-            suecaGame.setPlayer(gamer[i], i);
-
-        for (auto i = 0; i < 4; ++i)
-            suecaGame.getPlayer(i).printHand();
+        GameSettings suecaGame(gameID, trumpSuit, &_player);
 
         // Play Turns
-        std::array<GameTurn,10> suecaTurnHistory;
+        std::array<GameTurn*,10> suecaTurnHistory;
         int startingPlayer = trumpOwner;
-        //suecaGame.getTrumpSuit()
         
         for (auto i = 0; i < 10; ++i)
         {
-            GameTurn suecaTurn(i, startingPlayer);
-            std::cout << "\t\t\t.:: Round " << i+1 << " ::." << std::endl;
+            GameTurn suecaTurn(i, startingPlayer, gameID, trumpSuit, &_player);
+            std::cout << "\n\t\t\t.:: Round " << i+1 << " ::." << std::endl;
 
             suecaTurn.playTurn();
-
-            for (auto i = 0; i < 4; ++i)
-                suecaGame.getPlayer(i).printHand();
-            
+                        
             std::cout << "---------------------------------------------------------------------" << std::endl;
+            
+            suecaTurn.calcTurnWinner();
             startingPlayer = suecaTurn.getTurnWinner();
-            std::cout << startingPlayer << std::endl;
+            
             std::cout << "=====================================================================\n" << std::endl;
-            suecaTurnHistory[i] = suecaTurn;
+            suecaTurnHistory[i] = &suecaTurn;
         }
+        
+        int winnerTeamPts = suecaGame.calcWinnerTeam();
+
+        if (suecaGame.getWinnerTeam() == 0)
+            std::cout << "This game ended in a tie!" << std::endl;
+        else if (suecaGame.getWinnerTeam() == 1)
+            std::cout << "Team (1 & 3) wins with " << winnerTeamPts << " points!" << std::endl;
+        else if (suecaGame.getWinnerTeam() == 2)
+            std::cout << "Team (2 & 4) wins with " << winnerTeamPts << " points!" << std::endl;
+        else std::cout << "Error: Couldn't find a winner." << std::endl;
         
         std::cout << "The game has finished! The winners are: " << "\n\nPlay another round? [Y/n] ";
         std::cin >> input;

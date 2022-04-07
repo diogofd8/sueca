@@ -14,30 +14,33 @@
 class GameSettings : public Deck {
     public:
         GameSettings();
-        GameSettings(int, int, std::array<Player,4>*);
-        GameSettings(int, int);
+        GameSettings(int,int,std::array<Player,4>*);
         ~GameSettings();
         const int getID() const;
         const int getPlayedTurns() const;
         const int getTrumpSuit() const;
-        const Player& getPlayer(int) const;
         const std::array<Player,4>& getPlayers() const;
+        const Player& getPlayer(int) const;
+        Player& getPlayer(int);
+        const int getWinnerTeam() const;
         void setTrumpSuit(int);
-        void setPlayer(Player&, int&);
+        void setPlayers(std::array<Player,4>*);
         void setPlayerPoints(int,int);
-        Player& PlayerSettings(int);
+        void printTrumpSuit() const;
+        int calcWinnerTeam();
 
     private:
         int ID;
         int playedTurns;
         int trumpSuit;
+        int winnerTeam;
         std::array<Player,4>* gamer;
 };
 
 class GameTurn : public GameSettings {
     public:
         GameTurn();
-        GameTurn(int,int);
+        GameTurn(int, int, int, int, std::array<Player,4>*);
         ~GameTurn();
         const int getNO() const;
         const int getStartingPlayer() const;
@@ -47,8 +50,8 @@ class GameTurn : public GameSettings {
         void setPlayedSuit(int);
         void setPoints(int);
         void setPlayedCard(Card&);  
-        void calcTurnWinner(); 
-        void printTable();    
+        void printTable();
+        void calcTurnWinner();     
         void playTurn(); 
 
     private:
@@ -58,6 +61,7 @@ class GameTurn : public GameSettings {
         int turnWinner;
         int points;
         std::vector<Card> tableCard;
+        std::vector<int> tableOrder;
 };
 
 #endif

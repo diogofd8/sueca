@@ -16,6 +16,7 @@ class Player {
         const std::string& getName() const;
         const int& getPoints() const;
         const std::vector<Card>& getHand() const;
+        int getHandSize();
         Card& getPlayerCard(int&);
         const Card& getPlayerCard(int) const;
         void setID(int&);
@@ -34,25 +35,3 @@ class Player {
 
 #endif
 
-
-/*
-
-// READS THE WHOLE VECTOR
-const std::vector<int>& GetVect() const
-{
-    return vect;
-}
-
-
-class X {
-    std::array<double, 9> array;
-public:
-    std::array<double, 9> const & GetArray() const {return array;}
-};
-
-X x;
-double d = x.GetArray()[5]; // read-only access, no copy
-
-auto array = x.GetArray();  // get a copy
-array[5] = 42;              // modify the copy
-*/

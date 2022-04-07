@@ -38,6 +38,11 @@ const std::vector<Card>& Player::getHand() const
     return hand;
 }
 
+int Player::getHandSize()
+{
+    return hand.size();
+}
+
 Card& Player::getPlayerCard (int &index)
 {
     return hand[index];
@@ -92,7 +97,7 @@ const int Player::printHand () const
         return -1;
     }
 
-    std::cout << "\t(" << id << ") " << name << "'s cards:" << std::endl;
+    std::cout << "\t(" << id+1 << ") " << name << "'s cards:" << std::endl;
     for (auto i = 0; i < hand.size(); ++i)
     {   
         std::cout << "\t\t(" << i << ") ";
