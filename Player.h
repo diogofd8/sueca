@@ -4,6 +4,7 @@
 #include <iostream>             // std::cout
 #include <string>               // std::string
 #include <vector>               // std::vector
+#include <algorithm>            // std::sort
 
 #include "Card.h"
 
@@ -23,6 +24,7 @@ class Player {
         void setName(std::string&);
         void setPoints(int&);
         void setPlayerCard(Card&, int&);
+        void orderHand(int&);
         void playCard(int&);
         const int printHand() const;
 

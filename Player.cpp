@@ -83,6 +83,51 @@ void Player::setPlayerCard (Card &_card, int &_index)
     return;
 }
 
+void Player::orderHand (int &_trump) 
+{
+    if (_trump < 0 || _trump > 3)
+    {
+        std::cout << "Error: Failed to order player hand" << std::endl;
+        return;
+    }
+
+    // Lambda Comparators
+   auto OrderRank = [](const Card &a, const Card &b) -> bool
+    {
+        return a.getRank() < b.getRank();
+    };
+    auto OrderSuit = [](const Card &a, const Card &b) -> bool
+    {
+        return a.getSuit() < b.getSuit();
+    };
+    auto OrderTrump = [&_trump](const Card &a, const Card &b) -> bool
+    {
+        if (a.getSuit() == _trump)
+        {
+            if (b.getSuit() == _trump)
+            {
+                return a.getRank() < b.getRank(); 
+            }
+            else return false;
+        }
+        else
+        {
+            if (b.getSuit() == _trump)
+            {
+                return true; 
+            }
+            else return false;
+        }
+    };
+
+    // Order by rank & suit
+    std::sort(hand.begin(), hand.end(), OrderRank);
+    std::sort(hand.begin(), hand.end(), OrderSuit);
+    std::sort(hand.begin(), hand.end(), OrderTrump);
+
+    return;
+}
+
 void Player::playCard (int &_index)
 {
     hand.erase(hand.begin()+_index);

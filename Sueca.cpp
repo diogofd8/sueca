@@ -60,10 +60,10 @@ int main ()
             }
         }
 
+        // Distribute the cards
         for (auto i = 0; i < 4; ++i)
             for (auto c = 0; c < 10; c++)
                 _player[i].setPlayerCard(gamedeck.getDeckCard(c+i*10), c);
-
         
         // Set the trump card
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -75,6 +75,10 @@ int main ()
         _player[trumpOwner].getPlayerCard(0).printCard();
         std::cout << std::endl;
         int trumpSuit = _player[trumpOwner].getPlayerCard(0).getSuit();
+
+        // Ordering players' hand
+        for (auto i = 0; i < 4; ++i)
+            _player[i].orderHand(trumpSuit);
 
         // Create Game instance
         GameSettings suecaGame(gameID, trumpSuit, &_player);
